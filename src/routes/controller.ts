@@ -1,6 +1,13 @@
 import { Response, Request, Router } from "express";
-import { UserRegister, Userlogin } from "../helpers/data.interface";
+import { isValidObjectId } from "mongoose";
+import {
+  Params,
+  Post,
+  UserRegister,
+  Userlogin,
+} from "../helpers/data.interface";
 import { UserModel } from "../mongo/models/users.model";
+import { PostModel } from "../mongo/models/post.model";
 
 const router: Router = Router();
 
@@ -12,15 +19,7 @@ router.get(
   "/users/login",
   async (req: Request<void, void, Userlogin>, resp: Response) => {
     try {
-      const { email, password } = req.body;
-      const user = await UserModel.findOne<UserRegister>({ email });
-      if (!user) {
-        return resp.status(400).json({ message: "Credenciales inválidas" });
-      }
-      if(user.password !== password) {
-        return resp.status(400).json({ message: "Credenciales inválidas" });
-      } 
-      resp.status(200).json(user);
+      login(req.body, resp);
     } catch (error) {
       console.error(error);
       resp
@@ -29,6 +28,24 @@ router.get(
     }
   }
 );
+
+async function login(userLogin: Userlogin, resp: Response) {
+  const { email, password } = userLogin;
+  const user = await UserModel.findOne({ email });
+  if (!user) {
+    return resp.status(400).json({ message: "Credenciales inválidas" });
+  }
+  if (user.password !== password) {
+    return resp.status(400).json({ message: "Credenciales inválidas" });
+  }
+  const newUser = {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    message: "Logeado correctamente",
+  };
+  resp.status(200).json(newUser);
+}
 
 router.post(
   "/users/register",
@@ -44,8 +61,8 @@ router.post(
   }
 );
 
-async function register(user: UserRegister, resp: Response) {
-  const { email, name, password } = user;
+async function register(userRegister: UserRegister, resp: Response) {
+  const { email, name, password } = userRegister;
   if (!email && !name && !password) {
     return resp
       .status(403)
@@ -57,21 +74,145 @@ async function register(user: UserRegister, resp: Response) {
       .status(400)
       .json({ message: "Este correo electrónico ya está en uso" });
   }
-  const newUser = new UserModel(user);
+  const newUser = new UserModel(userRegister);
   await newUser.save();
   return resp.status(201).json(newUser);
+}
+
+router.get("/users/:id", async (req: Request<Params>, resp: Response) => {
+  try {
+    getUserById(req.params, resp);
+  } catch (error) {
+    console.log(error);
+    resp
+      .status(500)
+      .json({ message: "Ha ocurrido un error al procesar la solicitud" });
+  }
+});
+
+async function getUserById(id: Params, resp: Response) {
+  if (!isValidObjectId(id)) {
+    return resp.status(403).send('Se requiere el pathParam "id"');
+  }
+  const userById = await UserModel.findById({ _id: id });
+  resp.json(userById);
 }
 
 /**
  * * POSTS
  */
 
-router.get("/post", async (req: Request, resp: Response) => {});
+router.get("/posts", async (resp: Response) => {
+  try {
+    const userPosts = await PostModel.find();
+    resp.json(userPosts);
+  } catch (error) {
+    console.log(error);
+    resp
+      .status(500)
+      .json({ message: "Ha ocurrido un error al procesar la solicitud" });
+  }
+});
 
-router.post("/post", async (req: Request, resp: Response) => {});
+router.get("/posts/:id", async (req: Request<Params>, resp: Response) => {
+  try {
+    getPostById(req.params, resp);
+  } catch (error) {
+    console.log(error);
+    resp
+      .status(500)
+      .json({ message: "Ha ocurrido un error al procesar la solicitud" });
+  }
+});
 
-router.put("/post", async (req: Request, resp: Response) => {});
+async function getPostById(id: Params, resp: Response) {
+  if (!isValidObjectId(id)) {
+    return resp.status(403).send('Se requiere el pathParam "id"');
+  }
+  const postById = await PostModel.findById({ _id: id });
+  resp.json(postById);
+}
 
-router.delete("/post", async (req: Request, resp: Response) => {});
+router.post(
+  "/posts/:id",
+  async (req: Request<Params, void, Post>, resp: Response) => {
+    try {
+      createPost(req.params, req.body, resp);
+    } catch (err) {
+      console.error(err);
+      resp
+        .status(500)
+        .json({ message: "Ha ocurrido un error al procesar la solicitud" });
+    }
+  }
+);
+
+async function createPost(id: Params, post: Post, resp: Response) {
+  const { title, content } = post;
+  if (!isValidObjectId(id)) {
+    return resp.status(403).send('Se requiere el pathParam "id"');
+  }
+  if (!title && !content) {
+    return resp.status(403).send('Se requiere en el body "title y content"');
+  }
+  const newPost = new PostModel({ title, content, author: id });
+  await newPost.save();
+  resp.status(201).json(newPost);
+}
+
+router.put(
+  "/posts/:id",
+  async (req: Request<Params, void, Post>, resp: Response) => {
+    try {
+      updatePost(req.params, req.body, resp);
+    } catch (error) {
+      console.error(error);
+      resp
+        .status(500)
+        .json({ message: "Ha ocurrido un error al procesar la solicitud" });
+    }
+  }
+);
+
+async function updatePost(id: Params, post: Post, resp: Response) {
+  const { content, title } = post;
+  if (!isValidObjectId(id)) {
+    return resp.status(403).send('Se requiere el pathParam "id"');
+  }
+  if (!title && !content) {
+    return resp.status(403).send('Se requiere en el body "title y content"');
+  }
+  const updatePost = await PostModel.findOne({ _id: id });
+  if (!updatePost) {
+    return resp.status(404).json({ message: "No se ha encontrado el post" });
+  }
+  updatePost.content = content;
+  updatePost.title = title;
+  await updatePost.save();
+  resp.status(200).json(updatePost);
+}
+
+router.delete("/posts/:id", async (req: Request<Params>, resp: Response) => {
+  try {
+    deletePost(req.params, resp);
+  } catch (error) {
+    console.error(error);
+    resp
+      .status(500)
+      .json({ message: "Ha ocurrido un error al procesar la solicitud" });
+  }
+});
+
+async function deletePost(id: Params, resp: Response) {
+  if (!isValidObjectId(id)) {
+    return resp.status(403).send('Se requiere el pathParam "id"');
+  }
+  const post = await PostModel.findOne({ _id: id });
+  if (!post) {
+    return resp.status(404).json({ message: "No se ha encontrado el post" });
+  }
+  await post.deleteOne();
+  resp.json({ message: "El post ha sido eliminado correctamente" });
+}
 
 export { router };

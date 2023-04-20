@@ -1,13 +1,11 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 
 const Post: Schema = new Schema({
-  tipo_usuario: Number,
-  identificacion: Number,
-  email: String,
-  contrasena: String,
-  telefono: String,
+    title: String,
+    content: String,
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 });
 
-const postModel = model("post", Post);
+const PostModel = model("post", Post);
 
-export { postModel };
+export { PostModel };

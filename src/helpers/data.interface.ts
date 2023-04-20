@@ -10,14 +10,15 @@ export interface Userlogin {
 }
 
 export interface Post {
-    id: string,
     title: string,
-    description: string,
-    author: string,
-    authorId: string,
+    content: string,
     
 }
 
 export interface Querys {
+    id: string
+}
+
+export interface Params {
     id: string
 }
