@@ -90,7 +90,7 @@ function register(userRegister, resp) {
 }
 router.get("/users/:id", (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        getUserById(req.params, resp);
+        getUserById(req.params.id, resp);
     }
     catch (error) {
         console.log(error);
@@ -125,7 +125,7 @@ router.get("/posts", (resp) => __awaiter(void 0, void 0, void 0, function* () {
 }));
 router.get("/posts/:id", (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        getPostById(req.params, resp);
+        getPostById(req.params.id, resp);
     }
     catch (error) {
         console.log(error);
@@ -145,7 +145,7 @@ function getPostById(id, resp) {
 }
 router.post("/posts/:id", (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        createPost(req.params, req.body, resp);
+        createPost(req.params.id, req.body, resp);
     }
     catch (err) {
         console.error(err);
@@ -170,7 +170,7 @@ function createPost(id, post, resp) {
 }
 router.put("/posts/:id", (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        updatePost(req.params, req.body, resp);
+        updatePost(req.params.id, req.body, resp);
     }
     catch (error) {
         console.error(error);
@@ -200,7 +200,7 @@ function updatePost(id, post, resp) {
 }
 router.delete("/posts/:id", (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        deletePost(req.params, resp);
+        deletePost(req.params.id, resp);
     }
     catch (error) {
         console.error(error);

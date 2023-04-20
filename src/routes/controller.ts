@@ -90,7 +90,7 @@ async function register(userRegister: UserRegister, resp: Response) {
 
 router.get("/users/:id", async (req: Request<Params>, resp: Response) => {
   try {
-    getUserById(req.params, resp);
+    getUserById(req.params.id, resp);
   } catch (error) {
     console.log(error);
     resp
@@ -99,7 +99,7 @@ router.get("/users/:id", async (req: Request<Params>, resp: Response) => {
   }
 });
 
-async function getUserById(id: Params, resp: Response) {
+async function getUserById(id: string, resp: Response) {
   if (!isValidObjectId(id)) {
     return resp.status(403).send('Se requiere el pathParam "id"');
   }
@@ -125,7 +125,7 @@ router.get("/posts", async (resp: Response) => {
 
 router.get("/posts/:id", async (req: Request<Params>, resp: Response) => {
   try {
-    getPostById(req.params, resp);
+    getPostById(req.params.id, resp);
   } catch (error) {
     console.log(error);
     resp
@@ -134,7 +134,7 @@ router.get("/posts/:id", async (req: Request<Params>, resp: Response) => {
   }
 });
 
-async function getPostById(id: Params, resp: Response) {
+async function getPostById(id: string, resp: Response) {
   if (!isValidObjectId(id)) {
     return resp.status(403).send('Se requiere el pathParam "id"');
   }
@@ -146,7 +146,7 @@ router.post(
   "/posts/:id",
   async (req: Request<Params, void, Post>, resp: Response) => {
     try {
-      createPost(req.params, req.body, resp);
+      createPost(req.params.id, req.body, resp);
     } catch (err) {
       console.error(err);
       resp
@@ -156,7 +156,7 @@ router.post(
   }
 );
 
-async function createPost(id: Params, post: Post, resp: Response) {
+async function createPost(id: string, post: Post, resp: Response) {
   const { title, content } = post;
   if (!isValidObjectId(id)) {
     return resp.status(403).send('Se requiere el pathParam "id"');
@@ -173,7 +173,7 @@ router.put(
   "/posts/:id",
   async (req: Request<Params, void, Post>, resp: Response) => {
     try {
-      updatePost(req.params, req.body, resp);
+      updatePost(req.params.id, req.body, resp);
     } catch (error) {
       console.error(error);
       resp
@@ -183,7 +183,7 @@ router.put(
   }
 );
 
-async function updatePost(id: Params, post: Post, resp: Response) {
+async function updatePost(id: string, post: Post, resp: Response) {
   const { content, title } = post;
   if (!isValidObjectId(id)) {
     return resp.status(403).send('Se requiere el pathParam "id"');
@@ -203,7 +203,7 @@ async function updatePost(id: Params, post: Post, resp: Response) {
 
 router.delete("/posts/:id", async (req: Request<Params>, resp: Response) => {
   try {
-    deletePost(req.params, resp);
+    deletePost(req.params.id, resp);
   } catch (error) {
     console.error(error);
     resp
@@ -212,7 +212,7 @@ router.delete("/posts/:id", async (req: Request<Params>, resp: Response) => {
   }
 });
 
-async function deletePost(id: Params, resp: Response) {
+async function deletePost(id: string, resp: Response) {
   if (!isValidObjectId(id)) {
     return resp.status(403).send('Se requiere el pathParam "id"');
   }
