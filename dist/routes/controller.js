@@ -18,11 +18,11 @@ const jwt_1 = require("../helpers/jwt");
 const router = (0, express_1.Router)();
 exports.router = router;
 router.post('/generateJWT', (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, email } = req.body;
-    if (name.length === 0 && email.length === 0) {
+    const { email } = req.body;
+    if (email.length === 0) {
         return resp.status(403).send('Se requiere el parametro name y email');
     }
-    const token = yield (0, jwt_1.generateJWT)(name, email);
+    const token = yield (0, jwt_1.generateJWT)(email);
     const data = {
         token
     };

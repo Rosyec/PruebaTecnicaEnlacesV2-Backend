@@ -5,8 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.authMiddleware = exports.generateJWT = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const generateJWT = (name, email) => {
-    const payload = { name, email };
+const generateJWT = (email) => {
+    const payload = { email };
     return new Promise((resolve, reject) => {
         jsonwebtoken_1.default.sign(payload, process.env.SECRET_JWT_SEED, {
             expiresIn: '12h'

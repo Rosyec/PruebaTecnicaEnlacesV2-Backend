@@ -6,7 +6,6 @@ export interface UserRegister {
 }
 
 export interface JWT {
-    name: string,
     email: string,
 }
 

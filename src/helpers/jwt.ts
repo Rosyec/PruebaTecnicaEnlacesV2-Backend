@@ -2,8 +2,8 @@ import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Userlogin } from './data.interface';
 
-const generateJWT = (name: string, email: string) => {
-    const payload = { name, email };
+const generateJWT = (email: string) => {
+    const payload = { email };
     return new Promise((resolve, reject) => {
         jwt.sign(payload, process.env.SECRET_JWT_SEED!, {
             expiresIn: '12h'

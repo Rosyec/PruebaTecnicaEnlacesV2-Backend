@@ -14,11 +14,11 @@ import { authMiddleware, generateJWT } from "../helpers/jwt";
 const router: Router = Router();
 
 router.post('/generateJWT', async (req: Request<void, void, JWT>, resp: Response) => {
-    const { name, email } = req.body;
-    if (name.length === 0 && email.length === 0) {
+    const { email } = req.body;
+    if (email.length === 0) {
       return resp.status(403).send('Se requiere el parametro name y email');
     }
-    const token = await generateJWT( name, email );
+    const token = await generateJWT( email );
     const data = {
       token
     }
