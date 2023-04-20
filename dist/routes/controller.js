@@ -14,12 +14,13 @@ const express_1 = require("express");
 const mongoose_1 = require("mongoose");
 const users_model_1 = require("../mongo/models/users.model");
 const post_model_1 = require("../mongo/models/post.model");
+const jwt_1 = require("../helpers/jwt");
 const router = (0, express_1.Router)();
 exports.router = router;
 /**
  * * USERS
  */
-router.get("/users/login", (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/users/login", jwt_1.authMiddleware, (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         login(req.body, resp);
     }
@@ -74,8 +75,16 @@ function register(userRegister, resp) {
                 .status(400)
                 .json({ message: "Este correo electrónico ya está en uso" });
         }
-        const newUser = new users_model_1.UserModel(userRegister);
-        yield newUser.save();
+        const newToken = yield (0, jwt_1.generateJWT)(name, email);
+        const user = new users_model_1.UserModel(userRegister);
+        yield user.save();
+        const newUser = {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            token: newToken,
+            message: "Registrado correctamente",
+        };
         return resp.status(201).json(newUser);
     });
 }

@@ -1,13 +1,14 @@
 import { Response, Request, Router } from "express";
 import { isValidObjectId } from "mongoose";
+import { UserModel } from "../mongo/models/users.model";
+import { PostModel } from "../mongo/models/post.model";
 import {
   Params,
   Post,
   UserRegister,
   Userlogin,
 } from "../helpers/data.interface";
-import { UserModel } from "../mongo/models/users.model";
-import { PostModel } from "../mongo/models/post.model";
+import { authMiddleware, generateJWT } from "../helpers/jwt";
 
 const router: Router = Router();
 
@@ -16,7 +17,7 @@ const router: Router = Router();
  */
 
 router.get(
-  "/users/login",
+  "/users/login", authMiddleware,
   async (req: Request<void, void, Userlogin>, resp: Response) => {
     try {
       login(req.body, resp);
@@ -74,8 +75,16 @@ async function register(userRegister: UserRegister, resp: Response) {
       .status(400)
       .json({ message: "Este correo electrónico ya está en uso" });
   }
-  const newUser = new UserModel(userRegister);
-  await newUser.save();
+  const newToken = await generateJWT(name, email);
+  const user = new UserModel(userRegister);
+  await user.save();
+  const newUser = {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    token: newToken,
+    message: "Registrado correctamente",
+  };
   return resp.status(201).json(newUser);
 }
 
