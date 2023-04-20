@@ -111,7 +111,7 @@ function getUserById(id, resp) {
 /**
  * * POSTS
  */
-router.get("/posts", (resp) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/posts", (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userPosts = yield post_model_1.PostModel.find();
         resp.json(userPosts);

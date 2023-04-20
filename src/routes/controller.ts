@@ -111,7 +111,7 @@ async function getUserById(id: string, resp: Response) {
  * * POSTS
  */
 
-router.get("/posts", async (resp: Response) => {
+router.get("/posts", async (req: Request, resp: Response) => {
   try {
     const userPosts = await PostModel.find();
     resp.json(userPosts);
