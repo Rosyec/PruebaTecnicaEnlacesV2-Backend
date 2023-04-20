@@ -17,12 +17,25 @@ const post_model_1 = require("../mongo/models/post.model");
 const jwt_1 = require("../helpers/jwt");
 const router = (0, express_1.Router)();
 exports.router = router;
+router.post('/generateJWT', (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+    const { name, email } = req.body;
+    if (name.length === 0 && email.length === 0) {
+        return resp.status(403).send('Se requiere el parametro name y email');
+    }
+    const token = yield (0, jwt_1.generateJWT)(name, email);
+    const data = {
+        token
+    };
+    resp.status(200).json(data);
+}));
 /**
  * * USERS
  */
 router.post("/users/login", jwt_1.authMiddleware, (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        login(req.body, resp);
+        console.log(req.body);
+        const { email, password } = req.body;
+        login(email, password, resp);
     }
     catch (error) {
         console.error(error);
@@ -31,14 +44,13 @@ router.post("/users/login", jwt_1.authMiddleware, (req, resp) => __awaiter(void 
             .json({ message: "Ha ocurrido un error al procesar la solicitud" });
     }
 }));
-function login(userLogin, resp) {
+function login(email, mypassword, resp) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { email, password } = userLogin;
         const user = yield users_model_1.UserModel.findOne({ email });
         if (!user) {
             return resp.status(400).json({ message: "Credenciales inválidas" });
         }
-        if (user.password !== password) {
+        if (user.password !== mypassword) {
             return resp.status(400).json({ message: "Credenciales inválidas" });
         }
         const newUser = {
@@ -75,14 +87,12 @@ function register(userRegister, resp) {
                 .status(400)
                 .json({ message: "Este correo electrónico ya está en uso" });
         }
-        const newToken = yield (0, jwt_1.generateJWT)(name, email);
         const user = new users_model_1.UserModel(userRegister);
         yield user.save();
         const newUser = {
             _id: user._id,
             name: user.name,
             email: user.email,
-            token: newToken,
             message: "Registrado correctamente",
         };
         return resp.status(201).json(newUser);

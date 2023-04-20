@@ -1,7 +1,13 @@
 export interface UserRegister {
+    _id?: string
     name: string,
     email: string,
     password: string
+}
+
+export interface JWT {
+    name: string,
+    email: string,
 }
 
 export interface Userlogin {

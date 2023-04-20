@@ -3,6 +3,7 @@ import { isValidObjectId } from "mongoose";
 import { UserModel } from "../mongo/models/users.model";
 import { PostModel } from "../mongo/models/post.model";
 import {
+  JWT,
   Params,
   Post,
   UserRegister,
@@ -12,15 +13,30 @@ import { authMiddleware, generateJWT } from "../helpers/jwt";
 
 const router: Router = Router();
 
+router.post('/generateJWT', async (req: Request<void, void, JWT>, resp: Response) => {
+    const { name, email } = req.body;
+    if (name.length === 0 && email.length === 0) {
+      return resp.status(403).send('Se requiere el parametro name y email');
+    }
+    const token = await generateJWT( name, email );
+    const data = {
+      token
+    }
+    resp.status(200).json(data);
+});
+
 /**
  * * USERS
  */
 
 router.post(
-  "/users/login", authMiddleware,
+  "/users/login",
+  authMiddleware,
   async (req: Request<void, void, Userlogin>, resp: Response) => {
     try {
-      login(req.body, resp);
+      console.log(req.body);
+      const { email, password } = req.body;
+      login(email, password, resp);
     } catch (error) {
       console.error(error);
       resp
@@ -30,13 +46,12 @@ router.post(
   }
 );
 
-async function login(userLogin: Userlogin, resp: Response) {
-  const { email, password } = userLogin;
+async function login(email: string, mypassword: string, resp: Response) {
   const user = await UserModel.findOne({ email });
   if (!user) {
     return resp.status(400).json({ message: "Credenciales inválidas" });
   }
-  if (user.password !== password) {
+  if (user.password !== mypassword) {
     return resp.status(400).json({ message: "Credenciales inválidas" });
   }
   const newUser = {
@@ -75,14 +90,12 @@ async function register(userRegister: UserRegister, resp: Response) {
       .status(400)
       .json({ message: "Este correo electrónico ya está en uso" });
   }
-  const newToken = await generateJWT(name, email);
   const user = new UserModel(userRegister);
   await user.save();
   const newUser = {
     _id: user._id,
     name: user.name,
     email: user.email,
-    token: newToken,
     message: "Registrado correctamente",
   };
   return resp.status(201).json(newUser);
