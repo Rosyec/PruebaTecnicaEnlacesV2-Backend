@@ -16,7 +16,7 @@ const router: Router = Router();
  * * USERS
  */
 
-router.get(
+router.post(
   "/users/login", authMiddleware,
   async (req: Request<void, void, Userlogin>, resp: Response) => {
     try {
