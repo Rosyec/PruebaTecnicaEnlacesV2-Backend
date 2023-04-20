@@ -20,7 +20,7 @@ exports.router = router;
 /**
  * * USERS
  */
-router.get("/users/login", jwt_1.authMiddleware, (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/users/login", jwt_1.authMiddleware, (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         login(req.body, resp);
     }
